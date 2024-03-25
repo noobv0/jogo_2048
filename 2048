@@ -1,0 +1,83 @@
+import random
+
+def iniciar_tabuleiro():
+    tabuleiro = [[0] * 4 for _ in range(4)]
+    adicionar_peca(tabuleiro)
+    adicionar_peca(tabuleiro)
+    return tabuleiro
+
+def adicionar_peca(tabuleiro):
+    vazio = [(i, j) for i in range(4) for j in range(4) if tabuleiro[i][j] == 0]
+    if vazio:
+        i, j = random.choice(vazio)
+        tabuleiro[i][j] = random.choice([2, 4])
+
+def imprimir_tabuleiro(tabuleiro):
+    for linha in tabuleiro:
+        print(' '.join(str(coluna) if coluna != 0 else '.' for coluna in linha))
+    print()
+
+def transpor(tabuleiro):
+    return [list(coluna) for coluna in zip(*tabuleiro)]
+
+def mover_esquerda(tabuleiro):
+    novo_tabuleiro = []
+    for linha in tabuleiro:
+        novo_linha = [c for c in linha if c != 0]
+        while len(novo_linha) < 4:
+            novo_linha.append(0)
+        for i in range(3):
+            if novo_linha[i] == novo_linha[i + 1]:
+                novo_linha[i] *= 2
+                novo_linha[i + 1] = 0
+        novo_linha = [c for c in novo_linha if c != 0]
+        while len(novo_linha) < 4:
+            novo_linha.append(0)
+        novo_tabuleiro.append(novo_linha)
+    return novo_tabuleiro
+
+def mover_direita(tabuleiro):
+    return [list(reversed(linha)) for linha in mover_esquerda([list(reversed(linha)) for linha in tabuleiro])]
+
+def mover_cima(tabuleiro):
+    return transpor(mover_esquerda(transpor(tabuleiro)))
+
+def mover_baixo(tabuleiro):
+    return transpor(mover_direita(transpor(tabuleiro)))
+
+def jogo_acabou(tabuleiro):
+    for linha in tabuleiro:
+        if 2048 in linha:
+            print("Parabéns! Você alcançou 2048!")
+            return True
+    for i in range(4):
+        for j in range(4):
+            if tabuleiro[i][j] == 0:
+                return False
+            if j < 3 and tabuleiro[i][j] == tabuleiro[i][j + 1]:
+                return False
+            if i < 3 and tabuleiro[i][j] == tabuleiro[i + 1][j]:
+                return False
+    print("Game Over! Não há mais movimentos possíveis.")
+    return True
+
+def jogar_2048():
+    tabuleiro = iniciar_tabuleiro()
+    while not jogo_acabou(tabuleiro):
+        imprimir_tabuleiro(tabuleiro)
+        movimento = input("Digite w (cima), a (esquerda), s (baixo) ou d (direita): ").lower()
+        if movimento == 'w':
+            tabuleiro = mover_cima(tabuleiro)
+        elif movimento == 'a':
+            tabuleiro = mover_esquerda(tabuleiro)
+        elif movimento == 's':
+            tabuleiro = mover_baixo(tabuleiro)
+        elif movimento == 'd':
+            tabuleiro = mover_direita(tabuleiro)
+        else:
+            print("Movimento inválido! Use w, a, s ou d.")
+            continue
+        adicionar_peca(tabuleiro)
+
+if __name__ == "__main__":
+    jogar_2048()
